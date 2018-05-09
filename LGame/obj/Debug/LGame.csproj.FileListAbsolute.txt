@@ -1,0 +1,9 @@
+E:\задачи\c#\LGame\LGame\bin\Debug\LGame.exe.config
+E:\задачи\c#\LGame\LGame\bin\Debug\LGame.exe
+E:\задачи\c#\LGame\LGame\bin\Debug\LGame.pdb
+E:\задачи\c#\LGame\LGame\obj\Debug\LGame.csprojResolveAssemblyReference.cache
+E:\задачи\c#\LGame\LGame\obj\Debug\LGame.Form1.resources
+E:\задачи\c#\LGame\LGame\obj\Debug\LGame.Properties.Resources.resources
+E:\задачи\c#\LGame\LGame\obj\Debug\LGame.csproj.GenerateResource.Cache
+E:\задачи\c#\LGame\LGame\obj\Debug\LGame.exe
+E:\задачи\c#\LGame\LGame\obj\Debug\LGame.pdb
