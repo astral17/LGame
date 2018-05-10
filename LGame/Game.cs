@@ -155,14 +155,14 @@ namespace LGame
                 return false;
             return PlayerStep == player;
         }
-        public bool RegisterBot(int player)
+        public bool RegisterBot(int player, Bot.Difficulties difficulty = Bot.Difficulties.Medium)
         {
             if (player < 0 || player > 1)
                 return false;
             if (LevelBot[player] != Bot.Difficulties.Player)
                 return false;
             
-            LevelBot[player] = Bot.Difficulties.Medium;
+            LevelBot[player] = difficulty;
             return true;
         }
 

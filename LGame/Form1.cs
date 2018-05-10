@@ -34,7 +34,7 @@ namespace LGame
             InitializeComponent();
             SelfRef = this;
             selected.Clear();
-            game.RegisterBot(1);
+            game.RegisterBot(1, Bot.Difficulties.Random);
             timer1.Interval = 10;
             timer1.Start();
         }
