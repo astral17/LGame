@@ -51,6 +51,8 @@ namespace LGame
     {
         public int[,] Field = new int[4, 4]; // [x,y] 0 - White; 1 - Blue; 2 - Red; 3 - Yellow; 4 - Green
         Bot.Difficulties[] LevelBot = new Bot.Difficulties[2]; // 0 - Player
+        public bool BotsWait = false;
+        public bool IsWait = false;
         public Player[] LForms = new Player[8];
         public Player[] player = new Player[2];
         public Point[] stone = new Point[2];
@@ -200,15 +202,17 @@ namespace LGame
             stone[1] = new Point(3, 3);
             Field[stone[1].X, stone[1].Y] = 4;
         }
-        public void NextStep()
+        public void NextStep(bool Init = false)
         {
-            PlayerStep = (PlayerStep + 1) % 2;
-            while (LevelBot[PlayerStep] > 0)
+            IsWait = false;
+            if (!Init)
+                PlayerStep = (PlayerStep + 1) % 2;
+            if (LevelBot[PlayerStep] > 0)
             {
                 // Sheduler Bot
                 if (IsFinish())
                     return;
-                Form1.SelfRef.bot.Run(LevelBot[PlayerStep]);
+                Form1.SelfRef.bot.Run(LevelBot[PlayerStep], PlayerStep);
             }
         }
         public bool CheckCorrect(Player _newPosition)
@@ -279,7 +283,10 @@ namespace LGame
             Field[stone[StoneID].X, stone[StoneID].Y] = 0;
             stone[StoneID] = newStone;
             Field[stone[StoneID].X, stone[StoneID].Y] = StoneID + 3;
-            NextStep();
+            if (!BotsWait)
+                NextStep();
+            else
+                IsWait = true;
             return true;
         }
         public bool Play(Player newPosition, int StoneID, Point newStone)

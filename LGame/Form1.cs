@@ -34,7 +34,10 @@ namespace LGame
             InitializeComponent();
             SelfRef = this;
             selected.Clear();
-            game.RegisterBot(1, Bot.Difficulties.Random);
+            //game.BotsWait = true;
+            //game.RegisterBot(0, Bot.Difficulties.Hard);
+            game.RegisterBot(1, Bot.Difficulties.Hard);
+            game.NextStep(true);
             timer1.Interval = 10;
             timer1.Start();
         }
@@ -55,6 +58,9 @@ namespace LGame
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
             System.Threading.Monitor.Enter(e.Graphics);
+            //
+            if (game.IsWait)
+                game.NextStep();//*/
             // Draw Map
             for (int i = 0; i < 4; i++)
             {
@@ -146,6 +152,8 @@ namespace LGame
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
         {
+            /*if (game.IsWait)
+                game.NextStep();*/
             Point newPoint;
             switch (StepPhase)
             {
