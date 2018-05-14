@@ -28,16 +28,20 @@ namespace LGame
             SelectStone = 1,
             MoveStone = 2,
             Finished = 3,
+            WaitBot = 4,
         }
         public Form1()
         {            
             InitializeComponent();
             SelfRef = this;
             selected.Clear();
-            //game.BotsWait = true;
+            game.AutoNext = true;
             //game.RegisterBot(0, Bot.Difficulties.Hard);
             game.RegisterBot(1, Bot.Difficulties.Hard);
+            //game.RegisterBot(1, Bot.Difficulties.Hard);
             game.NextStep(true);
+            if (game.IsBotStep())
+                StepPhase = Phase.WaitBot;
             timer1.Interval = 10;
             timer1.Start();
         }
@@ -59,8 +63,18 @@ namespace LGame
         {
             System.Threading.Monitor.Enter(e.Graphics);
             //
-            if (game.IsWait)
-                game.NextStep();//*/
+            if (StepPhase != Phase.Finished)
+            {
+                if (game.IsBotStep())
+                    StepPhase = Phase.WaitBot;
+                if (StepPhase == Phase.WaitBot && game.IsWait)
+                {
+                    if (!game.NextStep())
+                        StepPhase = Phase.MovePlayer;
+                }
+                if (game.IsFinish())
+                    StepPhase = Phase.Finished;
+            }
             // Draw Map
             for (int i = 0; i < 4; i++)
             {
@@ -129,8 +143,8 @@ namespace LGame
                     e.Graphics.DrawString("Congratulations!", new Font("Arial", 32), Brushes.Pink, pictureBox1.Width / 2 - 180, pictureBox1.Height / 2 - 24);
                 if (game.IsStep(1))
                     e.Graphics.DrawString("Congratulations!", new Font("Arial", 32), Brushes.LightBlue, pictureBox1.Width / 2 - 180, pictureBox1.Height / 2 - 24);
-                System.Threading.Monitor.Exit(e.Graphics);
             }
+            System.Threading.Monitor.Exit(e.Graphics);
         }
 
         private void DrawNewPosition(Point newPoint)
@@ -207,8 +221,13 @@ namespace LGame
                         return;
                     if (game.Play(SelectedStone, newPoint))
                     {
+                        game.NextStep();
+                        game.IsWait = true;
+                        if (game.IsBotStep())
+                            StepPhase = Phase.WaitBot;
+                        else
+                            StepPhase = Phase.MovePlayer;
                         SelectedStone = -1;
-                        StepPhase = Phase.MovePlayer;
                         if (game.IsFinish())
                             StepPhase = Phase.Finished;
                     }

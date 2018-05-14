@@ -51,7 +51,7 @@ namespace LGame
     {
         public int[,] Field = new int[4, 4]; // [x,y] 0 - White; 1 - Blue; 2 - Red; 3 - Yellow; 4 - Green
         Bot.Difficulties[] LevelBot = new Bot.Difficulties[2]; // 0 - Player
-        public bool BotsWait = false;
+        public bool AutoNext = false;
         public bool IsWait = false;
         public Player[] LForms = new Player[8];
         public Player[] player = new Player[2];
@@ -151,6 +151,10 @@ namespace LGame
                 return false;
             return PlayerStep == player;
         }
+        public bool IsBotStep()
+        {
+            return (LevelBot[PlayerStep] > 0);
+        }
         public bool IsStep(int player)
         {
             if (player < 0 || player > 1)
@@ -202,18 +206,21 @@ namespace LGame
             stone[1] = new Point(3, 3);
             Field[stone[1].X, stone[1].Y] = 4;
         }
-        public void NextStep(bool Init = false)
+        public bool NextStep(bool Init = false)
         {
             IsWait = false;
-            if (!Init)
-                PlayerStep = (PlayerStep + 1) % 2;
             if (LevelBot[PlayerStep] > 0)
             {
                 // Sheduler Bot
                 if (IsFinish())
-                    return;
+                    return false;
                 Form1.SelfRef.bot.Run(LevelBot[PlayerStep], PlayerStep);
+                PlayerStep = (PlayerStep + 1) % 2;
             }
+            else
+                if (!Init)
+                    PlayerStep = (PlayerStep + 1) % 2;
+            return (LevelBot[PlayerStep] > 0);
         }
         public bool CheckCorrect(Player _newPosition)
         {
@@ -283,7 +290,7 @@ namespace LGame
             Field[stone[StoneID].X, stone[StoneID].Y] = 0;
             stone[StoneID] = newStone;
             Field[stone[StoneID].X, stone[StoneID].Y] = StoneID + 3;
-            if (!BotsWait)
+            if (!AutoNext)
                 NextStep();
             else
                 IsWait = true;

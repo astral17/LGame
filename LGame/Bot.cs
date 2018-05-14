@@ -25,12 +25,13 @@ namespace LGame
         }
         public Bot()
         {
+            //*
             int [,] Field2 = new int[4, 4];
             Field = new int[4, 4] {
-                { 3, 0, 2, 0 },
-                { 2, 2, 2, 0 },
-                { 0, 0, 1, 0 },
-                { 1, 1, 1, 3 }
+                { 0, 3, 0, 0 },
+                { 1, 1, 3, 0 },
+                { 1, 2, 2, 2 },
+                { 1, 2, 0, 0 }
             };
             for (int i = 0; i < 4; i++)
                 for (int j = 0; j < 4; j++)
@@ -103,6 +104,7 @@ namespace LGame
                 for (int j = 0; j < 4; j++)
                     Field2[i, j] = Field[i, j];
             Console.WriteLine("LosePositions.Add({0});", Hash());
+            //*/
             //1
             LosePositions.Add(6901765930882);
             LosePositions.Add(11257908949540);
@@ -264,6 +266,26 @@ namespace LGame
             LosePositions.Add(20570742410950);
             LosePositions.Add(5584911584422);
             //LosePositions.Add(16629706069096);
+            //
+            LosePositions.Add(11068050207250);
+            LosePositions.Add(5843981757160);
+            LosePositions.Add(5543424701950);
+            LosePositions.Add(7769610603112);
+            LosePositions.Add(11068050207250);
+            LosePositions.Add(12323676449512);
+            LosePositions.Add(5843981757160);
+            LosePositions.Add(5543424701950);
+            LosePositions.Add(7769610603112);
+            //
+            /*LosePositions.Add(7575872940658);
+            LosePositions.Add(11066072892610);
+            LosePositions.Add(5751047517790);
+            LosePositions.Add(5733530542126);
+            LosePositions.Add(7575872940658);
+            LosePositions.Add(6334082210926);
+            LosePositions.Add(11066072892610);
+            LosePositions.Add(5751047517790);
+            LosePositions.Add(5733530542126);*/
         }
         ulong Hash()
         {
