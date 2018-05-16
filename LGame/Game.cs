@@ -51,7 +51,7 @@ namespace LGame
     {
         public int[,] Field = new int[4, 4]; // [x,y] 0 - White; 1 - Blue; 2 - Red; 3 - Yellow; 4 - Green
         Bot.Difficulties[] LevelBot = new Bot.Difficulties[2]; // 0 - Player
-        public bool AutoNext = false;
+        public bool InterruptNext = false;
         public bool IsWait = false;
         public Player[] LForms = new Player[8];
         public Player[] player = new Player[2];
@@ -290,7 +290,7 @@ namespace LGame
             Field[stone[StoneID].X, stone[StoneID].Y] = 0;
             stone[StoneID] = newStone;
             Field[stone[StoneID].X, stone[StoneID].Y] = StoneID + 3;
-            if (!AutoNext)
+            if (!InterruptNext)
                 NextStep();
             else
                 IsWait = true;

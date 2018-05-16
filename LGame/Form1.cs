@@ -35,7 +35,7 @@ namespace LGame
             InitializeComponent();
             SelfRef = this;
             selected.Clear();
-            game.AutoNext = true;
+            game.InterruptNext = true;
             //game.RegisterBot(0, Bot.Difficulties.Hard);
             game.RegisterBot(1, Bot.Difficulties.Hard);
             //game.RegisterBot(1, Bot.Difficulties.Hard);
