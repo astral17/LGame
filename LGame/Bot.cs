@@ -393,7 +393,7 @@ namespace LGame
                                                 for (int i1 = 0; i1 < 4; i1++)
                                                     for (int j1 = 0; j1 < 4; j1++)
                                                         LocalGame.Field[i1, j1] = Field[i1, j1];
-                                                LocalGame.NextStep();
+                                                //LocalGame.BotStepssss();
                                             }
                                         }
                                 for (int i1 = 0; i1 < 4; i1++)

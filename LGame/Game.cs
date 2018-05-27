@@ -51,8 +51,8 @@ namespace LGame
     {
         public int[,] Field = new int[4, 4]; // [x,y] 0 - White; 1 - Blue; 2 - Red; 3 - Yellow; 4 - Green
         Bot.Difficulties[] LevelBot = new Bot.Difficulties[2]; // 0 - Player
-        public bool InterruptNext = false;
-        public bool IsWait = false;
+        public bool InterruptBot = false;
+        //public bool IsWait = false;
         public Player[] LForms = new Player[8];
         public Player[] player = new Player[2];
         public Point[] stone = new Point[2];
@@ -188,6 +188,11 @@ namespace LGame
             player[0][1] = new Point(2, 0);
             player[0][2] = new Point(2, 1);
             player[0][3] = new Point(2, 2);
+
+            /*player[0][0] = new Point(0, 1);
+            player[0][1] = new Point(0, 2);
+            player[0][2] = new Point(1, 2);
+            player[0][3] = new Point(2, 2);*/
             player[0].Sort();
             for (int i = 0; i < 4; i++)
                 Field[player[0][i].X, player[0][i].Y] = 1;
@@ -197,6 +202,11 @@ namespace LGame
             player[1][1] = new Point(1, 3);
             player[1][2] = new Point(1, 2);
             player[1][3] = new Point(1, 1);
+
+            /*player[1][0] = new Point(1, 1);
+            player[1][1] = new Point(2, 1);
+            player[1][2] = new Point(3, 1);
+            player[1][3] = new Point(3, 2);*/
             player[1].Sort();
             for (int i = 0; i < 4; i++)
                 Field[player[1][i].X, player[1][i].Y] = 2;
@@ -206,20 +216,24 @@ namespace LGame
             stone[1] = new Point(3, 3);
             Field[stone[1].X, stone[1].Y] = 4;
         }
-        public bool NextStep(bool Init = false)
+        private void NextStep()
         {
-            IsWait = false;
+            PlayerStep = (PlayerStep + 1) % 2;
+        }
+        
+        public bool BotStep() // Return is bot step
+        {
+            //IsWait = false;
             if (LevelBot[PlayerStep] > 0)
             {
                 // Sheduler Bot
                 if (IsFinish())
                     return false;
                 Form1.SelfRef.bot.Run(LevelBot[PlayerStep], PlayerStep);
-                PlayerStep = (PlayerStep + 1) % 2;
+                if (InterruptBot)
+                    return (LevelBot[PlayerStep] > 0);
+                //NextStep();
             }
-            else
-                if (!Init)
-                    PlayerStep = (PlayerStep + 1) % 2;
             return (LevelBot[PlayerStep] > 0);
         }
         public bool CheckCorrect(Player _newPosition)
@@ -290,10 +304,7 @@ namespace LGame
             Field[stone[StoneID].X, stone[StoneID].Y] = 0;
             stone[StoneID] = newStone;
             Field[stone[StoneID].X, stone[StoneID].Y] = StoneID + 3;
-            if (!InterruptNext)
-                NextStep();
-            else
-                IsWait = true;
+            NextStep();
             return true;
         }
         public bool Play(Player newPosition, int StoneID, Point newStone)
@@ -301,15 +312,6 @@ namespace LGame
             if (!Play(newPosition))
                 return false;
             return Play(StoneID, newStone);
-            /*if (!CheckStone(StoneID, newStone) || !CheckCorrect(newPosition))
-                return false;
-            for (int i = 0; i < 4; i++)
-                Field[player[PlayerStep][i].X, player[PlayerStep][i].Y] = 0;
-            for (int i = 0; i < 4; i++)
-                Field[newPosition[i].X, newPosition[i].Y] = PlayerStep + 1;
-            player[PlayerStep] = newPosition;
-            NextStep();
-            return true;*/
         }
         public bool IsFinish()
         {

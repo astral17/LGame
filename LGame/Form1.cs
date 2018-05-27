@@ -35,19 +35,38 @@ namespace LGame
             InitializeComponent();
             SelfRef = this;
             selected.Clear();
-            game.InterruptNext = true;
+            game.InterruptBot = true;
             //game.RegisterBot(0, Bot.Difficulties.Hard);
             game.RegisterBot(1, Bot.Difficulties.Hard);
             //game.RegisterBot(1, Bot.Difficulties.Hard);
-            game.NextStep(true);
             if (game.IsBotStep())
+            {
                 StepPhase = Phase.WaitBot;
-            timer1.Interval = 10;
-            timer1.Start();
+                timer1.Interval = 10;
+                timer1.Start();
+            }
+            
         }
         private void timer1_Tick(object sender, EventArgs e)
         {
+            if (!game.BotStep())
+            {
+                StepPhase = Phase.MovePlayer;
+                timer1.Stop();
+            }
+            if (game.IsFinish())
+            {
+                StepPhase = Phase.Finished;
+                timer1.Stop();
+            }
             pictureBox1.Refresh();
+            /*timer1.Stop();
+            StepPhase = Phase.WaitBot;
+            while (game.BotStep())
+            {
+                pictureBox1.Refresh();
+            }
+            pictureBox1.Refresh();*/
         }
         private void pictureBox1_Click(object sender, EventArgs e)
         {
@@ -62,19 +81,6 @@ namespace LGame
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
             System.Threading.Monitor.Enter(e.Graphics);
-            //
-            if (StepPhase != Phase.Finished)
-            {
-                if (game.IsBotStep())
-                    StepPhase = Phase.WaitBot;
-                if (StepPhase == Phase.WaitBot && game.IsWait)
-                {
-                    if (!game.NextStep())
-                        StepPhase = Phase.MovePlayer;
-                }
-                if (game.IsFinish())
-                    StepPhase = Phase.Finished;
-            }
             // Draw Map
             for (int i = 0; i < 4; i++)
             {
@@ -147,21 +153,22 @@ namespace LGame
             System.Threading.Monitor.Exit(e.Graphics);
         }
 
-        private void DrawNewPosition(Point newPoint)
+        private bool DrawNewPosition(Point newPoint) //Return true if need update screen
         {
             if (0 > newPoint.X || newPoint.X >= 4 || 0 > newPoint.Y || newPoint.Y >= 4)
-                return;
+                return false;
             for (int i = 0; i < 4; i++)
             {
                 if (selected[i] == newPoint)
-                    return;
+                    return false;
                 if (selected[i].X == -1 && selected[i].Y == -1)
                 {
                     selected[i] = newPoint;
-                    return;
+                    return true;
                 }
             }
             selected.Clear();
+            return true;
         }
 
         private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
@@ -174,7 +181,8 @@ namespace LGame
                 case Phase.MovePlayer:
                     isMouseDown = true;
                     newPoint = new Point(e.X / CellSize, e.Y / CellSize);
-                    DrawNewPosition(newPoint);
+                    if (DrawNewPosition(newPoint))
+                        pictureBox1.Refresh();
                     break;
                 case Phase.SelectStone:
                     //newPoint = new Point(e.X / CellSize, e.Y / CellSize);
@@ -190,7 +198,8 @@ namespace LGame
             if (isMouseDown)
             {
                 Point newPoint = new Point(e.X / CellSize, e.Y / CellSize);
-                DrawNewPosition(newPoint);
+                if (DrawNewPosition(newPoint))
+                    pictureBox1.Refresh();
             }
         }
 
@@ -204,6 +213,7 @@ namespace LGame
                         StepPhase = Phase.SelectStone;
                     selected.Clear();
                     isMouseDown = false;
+                    pictureBox1.Refresh();
                     break;
                 case Phase.SelectStone:
                     newPoint = new Point(e.X / CellSize, e.Y / CellSize);
@@ -214,6 +224,7 @@ namespace LGame
                         SelectedStone = game.Field[newPoint.X, newPoint.Y] - 3;
                         StepPhase = Phase.MoveStone;
                     }
+                    pictureBox1.Refresh();
                     break;
                 case Phase.MoveStone:
                     newPoint = new Point(e.X / CellSize, e.Y / CellSize);
@@ -221,16 +232,18 @@ namespace LGame
                         return;
                     if (game.Play(SelectedStone, newPoint))
                     {
-                        game.NextStep();
-                        game.IsWait = true;
-                        if (game.IsBotStep())
-                            StepPhase = Phase.WaitBot;
-                        else
-                            StepPhase = Phase.MovePlayer;
                         SelectedStone = -1;
+                        pictureBox1.Refresh();
+                        StepPhase = Phase.WaitBot;
+                        while (game.BotStep())
+                        {
+                            pictureBox1.Refresh();
+                        }
+                        StepPhase = Phase.MovePlayer;
                         if (game.IsFinish())
                             StepPhase = Phase.Finished;
                     }
+                    pictureBox1.Refresh();
                     break;
             }
         }
