@@ -331,7 +331,7 @@ namespace LGame
                     for (y = 0; y < 4; y++)
                         for (int i = 0; i < 8; i++)
                         {
-                            LocalGame = new Game((Form1.SelfRef.game.IsStep(0) ? 0 : 1), Form1.SelfRef.game.player[0], Form1.SelfRef.game.player[1], Form1.SelfRef.game.stone[0], Form1.SelfRef.game.stone[1]);
+                            LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
                             for (int j = 0; j < 4; j++)
                                 newPosition[j] = new Point(LocalGame.LForms[i][j].X + x, LocalGame.LForms[i][j].Y + y);
                             if (LocalGame.CheckCorrect(newPosition))
@@ -340,7 +340,7 @@ namespace LGame
                                     for (int stoneX = 0; stoneX < 4; stoneX++)
                                         for (int stoneY = 0; stoneY < 4; stoneY++)
                                         {
-                                            LocalGame = new Game((Form1.SelfRef.game.IsStep(0) ? 0 : 1), Form1.SelfRef.game.player[0], Form1.SelfRef.game.player[1], Form1.SelfRef.game.stone[0], Form1.SelfRef.game.stone[1]);
+                                            LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
                                             LocalGame.Play(newPosition);
                                             if (LocalGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
                                             {
@@ -353,7 +353,7 @@ namespace LGame
                 element = rnd.Next(0, list.Count - 1);
                 for (int j = 0; j < 4; j++)
                     newPosition[j] = new Point(LocalGame.LForms[list[element].Item3][j].X + list[element].Item1, LocalGame.LForms[list[element].Item3][j].Y + list[element].Item2);
-                Form1.SelfRef.game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
+                GameForm.SelfRef.game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
                 return;
             }
             if (Difficulty == Difficulties.Easy)
@@ -366,7 +366,7 @@ namespace LGame
                     for (y = 0; y < 4; y++)
                         for (int i = 0; i < 8; i++)
                         {
-                            LocalGame = new Game((Form1.SelfRef.game.IsStep(0) ? 0 : 1), Form1.SelfRef.game.player[0], Form1.SelfRef.game.player[1], Form1.SelfRef.game.stone[0], Form1.SelfRef.game.stone[1]);
+                            LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
                             for (int j = 0; j < 4; j++)
                                 newPosition[j] = new Point(LocalGame.LForms[i][j].X + x, LocalGame.LForms[i][j].Y + y);
                             if (LocalGame.CheckCorrect(newPosition))
@@ -379,7 +379,7 @@ namespace LGame
                                     for (int stoneX = 0; stoneX < 4; stoneX++)
                                         for (int stoneY = 0; stoneY < 4; stoneY++)
                                         {
-                                            LocalGame = new Game((Form1.SelfRef.game.IsStep(0) ? 0 : 1), Form1.SelfRef.game.player[0], Form1.SelfRef.game.player[1], Form1.SelfRef.game.stone[0], Form1.SelfRef.game.stone[1]);
+                                            LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
                                             LocalGame.Play(newPosition);
                                             if (LocalGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
                                             {
@@ -387,7 +387,7 @@ namespace LGame
                                                 LocalGame.Play(stoneID, new Point(stoneX, stoneY));
                                                 if (LocalGame.IsFinish())
                                                 {
-                                                    Form1.SelfRef.game.Play(newPosition, stoneID, new Point(stoneX, stoneY));
+                                                    GameForm.SelfRef.game.Play(newPosition, stoneID, new Point(stoneX, stoneY));
                                                     return;
                                                 }
                                                 for (int i1 = 0; i1 < 4; i1++)
@@ -398,13 +398,13 @@ namespace LGame
                                         }
                                 for (int i1 = 0; i1 < 4; i1++)
                                     for (int j1 = 0; j1 < 4; j1++)
-                                        LocalGame.Field[i1, j1] = Form1.SelfRef.game.Field[i1, j1];
+                                        LocalGame.Field[i1, j1] = GameForm.SelfRef.game.Field[i1, j1];
                             }
                         }
                 element = rnd.Next(0, list.Count - 1);
                 for (int j = 0; j < 4; j++)
                     newPosition[j] = new Point(LocalGame.LForms[list[element].Item3][j].X + list[element].Item1, LocalGame.LForms[list[element].Item3][j].Y + list[element].Item2);
-                Form1.SelfRef.game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
+                GameForm.SelfRef.game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
                 return;
             }
             if (Difficulty == Difficulties.Medium)
@@ -418,7 +418,7 @@ namespace LGame
                     for (y = 0; y < 4; y++)
                         for (int i = 0; i < 8; i++)
                         {
-                            LocalGame = new Game((Form1.SelfRef.game.IsStep(0) ? 0 : 1), Form1.SelfRef.game.player[0], Form1.SelfRef.game.player[1], Form1.SelfRef.game.stone[0], Form1.SelfRef.game.stone[1]);
+                            LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
                             for (int j = 0; j < 4; j++)
                                 newPosition[j] = new Point(LocalGame.LForms[i][j].X + x, LocalGame.LForms[i][j].Y + y);
                             if (LocalGame.CheckCorrect(newPosition))
@@ -428,7 +428,7 @@ namespace LGame
                                     for (int stoneX = 0; stoneX < 4; stoneX++)
                                         for (int stoneY = 0; stoneY < 4; stoneY++)
                                         {
-                                            LocalGame = new Game((Form1.SelfRef.game.IsStep(0) ? 0 : 1), Form1.SelfRef.game.player[0], Form1.SelfRef.game.player[1], Form1.SelfRef.game.stone[0], Form1.SelfRef.game.stone[1]);
+                                            LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
                                             LocalGame.Play(newPosition);
                                             if (LocalGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
                                             {
@@ -436,7 +436,7 @@ namespace LGame
                                                 LocalGame.Play(stoneID, new Point(stoneX, stoneY));
                                                 if (LocalGame.IsFinish())
                                                 {
-                                                    Form1.SelfRef.game.Play(newPosition, stoneID, new Point(stoneX, stoneY));
+                                                    GameForm.SelfRef.game.Play(newPosition, stoneID, new Point(stoneX, stoneY));
                                                     return;
                                                 }
                                             }
@@ -451,7 +451,7 @@ namespace LGame
                     int step = 0;
                     Point stone1, stone2;
                     bool isGood = true;
-                    LocalGame = new Game((Form1.SelfRef.game.IsStep(0) ? 0 : 1), Form1.SelfRef.game.player[0], Form1.SelfRef.game.player[1], Form1.SelfRef.game.stone[0], Form1.SelfRef.game.stone[1]);
+                    LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
                     for (int j = 0; j < 4; j++)
                         newPosition[j] = new Point(LocalGame.LForms[list[element].Item3][j].X + list[element].Item1, LocalGame.LForms[list[element].Item3][j].Y + list[element].Item2);
                     LocalGame.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
@@ -502,13 +502,13 @@ namespace LGame
                     //element = 0;
                     for (int j = 0; j < 4; j++)
                         newPosition[j] = new Point(LocalGame.LForms[goodList[element].Item3][j].X + goodList[element].Item1, LocalGame.LForms[goodList[element].Item3][j].Y + goodList[element].Item2);
-                    Form1.SelfRef.game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
+                    GameForm.SelfRef.game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
                     return;
                 }
                 element = rnd.Next(0, list.Count - 1);
                 for (int j = 0; j < 4; j++)
                     newPosition[j] = new Point(LocalGame.LForms[list[element].Item3][j].X + list[element].Item1, LocalGame.LForms[list[element].Item3][j].Y + list[element].Item2);
-                Form1.SelfRef.game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
+                GameForm.SelfRef.game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
 
                 return;
             }
@@ -529,7 +529,7 @@ namespace LGame
                     for (y = 0; y < 4; y++)
                         for (int i = 0; i < 8; i++)
                         {
-                            LocalGame = new Game(1, Form1.SelfRef.game.player[1 - curStep], Form1.SelfRef.game.player[curStep], Form1.SelfRef.game.stone[0], Form1.SelfRef.game.stone[1]);
+                            LocalGame = new Game(1, GameForm.SelfRef.game.player[1 - curStep], GameForm.SelfRef.game.player[curStep], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
                             for (int j = 0; j < 4; j++)
                                 newPosition[j] = new Point(LocalGame.LForms[i][j].X + x, LocalGame.LForms[i][j].Y + y);
                             if (LocalGame.CheckCorrect(newPosition))
@@ -539,7 +539,7 @@ namespace LGame
                                         for (int stoneY = 0; stoneY < 4; stoneY++)
                                         {
                                             //LocalGame = new Game(curStep, Form1.SelfRef.game.player[curStep], Form1.SelfRef.game.player[1 - curStep], Form1.SelfRef.game.stone[0], Form1.SelfRef.game.stone[1]);
-                                            LocalGame = new Game(1, Form1.SelfRef.game.player[1 - curStep], Form1.SelfRef.game.player[curStep], Form1.SelfRef.game.stone[0], Form1.SelfRef.game.stone[1]);
+                                            LocalGame = new Game(1, GameForm.SelfRef.game.player[1 - curStep], GameForm.SelfRef.game.player[curStep], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
                                             LocalGame.Play(newPosition);
                                             if (LocalGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
                                             {
@@ -550,7 +550,7 @@ namespace LGame
                                                         Field[i1, j1] = LocalGame.Field[i1, j1];
                                                 if (LocalGame.IsFinish())
                                                 {
-                                                    Form1.SelfRef.game.Play(newPosition, stoneID, new Point(stoneX, stoneY));
+                                                    GameForm.SelfRef.game.Play(newPosition, stoneID, new Point(stoneX, stoneY));
                                                     //Console.WriteLine(Hash());
                                                     //goodList.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
                                                     return;
@@ -578,7 +578,7 @@ namespace LGame
                 {
                     for (int j = 0; j < 4; j++)
                         newPosition[j] = new Point(LocalGame.LForms[goodList[element].Item3][j].X + goodList[element].Item1, LocalGame.LForms[goodList[element].Item3][j].Y + goodList[element].Item2);
-                    Form1.SelfRef.game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
+                    GameForm.SelfRef.game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
                     return;
                 }
                 /*if (goodList.Count > 0)
@@ -605,7 +605,7 @@ namespace LGame
                     Player player1, player2;
                     Point stone1, stone2;
                     bool isGood = true;
-                    LocalGame = new Game(0, Form1.SelfRef.game.player[curStep], Form1.SelfRef.game.player[1 - curStep], Form1.SelfRef.game.stone[0], Form1.SelfRef.game.stone[1]);
+                    LocalGame = new Game(0, GameForm.SelfRef.game.player[curStep], GameForm.SelfRef.game.player[1 - curStep], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
                     for (int j = 0; j < 4; j++)
                         newPosition[j] = new Point(LocalGame.LForms[list[element].Item3][j].X + list[element].Item1, LocalGame.LForms[list[element].Item3][j].Y + list[element].Item2);
                     LocalGame.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
@@ -659,14 +659,14 @@ namespace LGame
                     //element = 0;
                     for (int j = 0; j < 4; j++)
                         newPosition[j] = new Point(LocalGame.LForms[goodList[element].Item3][j].X + goodList[element].Item1, LocalGame.LForms[goodList[element].Item3][j].Y + goodList[element].Item2);
-                    Form1.SelfRef.game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
+                    GameForm.SelfRef.game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
                     return;
                 }
                 //
                 element = rnd.Next(0, list.Count - 1);
                 for (int j = 0; j < 4; j++)
                     newPosition[j] = new Point(LocalGame.LForms[list[element].Item3][j].X + list[element].Item1, LocalGame.LForms[list[element].Item3][j].Y + list[element].Item2);
-                Form1.SelfRef.game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
+                GameForm.SelfRef.game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
                 return;
             }
         }

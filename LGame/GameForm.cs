@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace LGame
 {
-    public partial class Form1 : Form
+    public partial class GameForm : Form
     {
-        public static Form1 SelfRef;
+        public static GameForm SelfRef;
         public readonly int CellSize = 150;
         public Game game = new Game();
         public Bot bot = new Bot();
@@ -30,7 +30,7 @@ namespace LGame
             Finished = 3,
             WaitBot = 4,
         }
-        public Form1()
+        public GameForm()
         {            
             InitializeComponent();
             SelfRef = this;

@@ -1,6 +1,6 @@
 ﻿namespace LGame
 {
-    partial class Form1
+    partial class GameForm
     {
         /// <summary>
         /// Требуется переменная конструктора.

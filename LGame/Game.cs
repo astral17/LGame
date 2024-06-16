@@ -229,7 +229,7 @@ namespace LGame
                 // Sheduler Bot
                 if (IsFinish())
                     return false;
-                Form1.SelfRef.bot.Run(LevelBot[PlayerStep], PlayerStep);
+                GameForm.SelfRef.bot.Run(LevelBot[PlayerStep], PlayerStep);
                 if (InterruptBot)
                     return (LevelBot[PlayerStep] > 0);
                 //NextStep();
