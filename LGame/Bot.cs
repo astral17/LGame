@@ -9,12 +9,11 @@ namespace LGame
 {
     public class Bot
     {
-        Random rnd = new Random();
-        public int[,] Field = new int[4, 4]; // [x,y] 0 - White; 1 - Blue; 2 - Red; 3 - Yellow; 4 - Green
+        private readonly Random rnd = new Random();
         //Dictionary<ulong, bool> isWinning; // First(Blue) player Win? ; if second player has access to win pos -> first lose
-        SortedSet<ulong> LosePositions = new SortedSet<ulong>(); // Player 1 - lose
-        SortedDictionary<ulong, int> priority = new SortedDictionary<ulong, int>(); // less - better
-        Game LocalGame = new Game();
+        // TODO: static
+        readonly SortedSet<ulong> LosePositions = new SortedSet<ulong>(); // Player 1 - lose
+        readonly SortedDictionary<ulong, int> priority = new SortedDictionary<ulong, int>(); // less - better
         public enum Difficulties
         {
             Player = 0,
@@ -305,369 +304,329 @@ namespace LGame
             LosePositions.Add(6332135237614);priority[6332135237614] = 4;
             LosePositions.Add(7089657286168);priority[7089657286168] = 4;
         }
-        ulong Hash()
+        ulong Hash(FieldTile[,] field)
         {
             ulong hash = 0;
             for (int i = 0; i < 4; i++)
                 for (int j = 0; j < 4; j++)
                 {
-                    if (Field[i, j] == 4)
-                        hash = hash * 7 + 4;
+                    if (field[i, j] == FieldTile.GreenStone)
+                        hash = hash * 7 + (ulong)FieldTile.YellowStone + 1;
                     else
-                        hash = hash * 7 + (ulong)Field[i, j] + 1;
+                        hash = hash * 7 + (ulong)field[i, j] + 1;
                 }
             return hash;
         }
-        public void Run(Difficulties Difficulty = Difficulties.Random, int curStep = 0)
+        private void RunRandom(GameField game)
         {
-            if (Difficulty == Difficulties.Random)
-            {
-                List<Tuple<int, int, int, int, int, int>> list = new List<Tuple<int, int, int, int, int, int>>();
-                List<Tuple<int, int, int, int, int, int>> goodList = new List<Tuple<int, int, int, int, int, int>>();
-                Player newPosition = new Player();
-                int x, y, f, element;
-                // Search move for win; save all correct positions
-                for (x = 0; x < 4; x++)
-                    for (y = 0; y < 4; y++)
-                        for (int i = 0; i < 8; i++)
+            List<Tuple<int, int, int, int, int, int>> list = new List<Tuple<int, int, int, int, int, int>>();
+            LShape newPosition = new LShape();
+            int x, y, f, element;
+            // Search move for win; save all correct positions
+            for (x = 0; x < 4; x++)
+                for (y = 0; y < 4; y++)
+                    for (int i = 0; i < 8; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                            newPosition[j] = new Point(GameField.LForms[i][j].X + x, GameField.LForms[i][j].Y + y);
+                        if (game.CheckCorrect(newPosition))
                         {
-                            LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
-                            for (int j = 0; j < 4; j++)
-                                newPosition[j] = new Point(LocalGame.LForms[i][j].X + x, LocalGame.LForms[i][j].Y + y);
-                            if (LocalGame.CheckCorrect(newPosition))
-                            {
-                                for (int stoneID = 0; stoneID < 2; stoneID++)
-                                    for (int stoneX = 0; stoneX < 4; stoneX++)
-                                        for (int stoneY = 0; stoneY < 4; stoneY++)
-                                        {
-                                            LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
-                                            LocalGame.Play(newPosition);
-                                            if (LocalGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
-                                            {
-                                                list.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
-                                            }
-                                        }
-                            }
+                            GameField localGame = (GameField)game.Clone();
+                            localGame.Play(newPosition);
+                            for (int stoneID = 0; stoneID < 2; stoneID++)
+                                for (int stoneX = 0; stoneX < 4; stoneX++)
+                                    for (int stoneY = 0; stoneY < 4; stoneY++)
+                                        if (localGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
+                                            list.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
                         }
+                    }
 
-                element = rnd.Next(0, list.Count - 1);
-                for (int j = 0; j < 4; j++)
-                    newPosition[j] = new Point(LocalGame.LForms[list[element].Item3][j].X + list[element].Item1, LocalGame.LForms[list[element].Item3][j].Y + list[element].Item2);
-                GameForm.SelfRef.game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
+            element = rnd.Next(0, list.Count - 1);
+            for (int j = 0; j < 4; j++)
+                newPosition[j] = new Point(GameField.LForms[list[element].Item3][j].X + list[element].Item1, GameField.LForms[list[element].Item3][j].Y + list[element].Item2);
+            game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
+        }
+        private void RunEasy(GameField game)
+        {
+            List<Tuple<int, int, int, int, int, int>> list = new List<Tuple<int, int, int, int, int, int>>();
+            LShape newPosition = new LShape();
+            // Search move for win; save all correct positions
+            for (int x = 0; x < 4; x++)
+                for (int y = 0; y < 4; y++)
+                    for (int i = 0; i < 8; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                            newPosition[j] = new Point(GameField.LForms[i][j].X + x, GameField.LForms[i][j].Y + y);
+                        if (game.CheckCorrect(newPosition))
+                        {
+                            for (int stoneID = 0; stoneID < 2; stoneID++)
+                                for (int stoneX = 0; stoneX < 4; stoneX++)
+                                    for (int stoneY = 0; stoneY < 4; stoneY++)
+                                    {
+                                        GameField localGame = (GameField)game.Clone();
+                                        localGame.Play(newPosition);
+                                        if (localGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
+                                        {
+                                            list.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
+                                            localGame.Play(stoneID, new Point(stoneX, stoneY));
+                                            if (localGame.IsFinish())
+                                            {
+                                                game.Play(newPosition, stoneID, new Point(stoneX, stoneY));
+                                                return;
+                                            }
+                                        }
+                                    }
+                        }
+                    }
+            if (list.Count == 0)
                 return;
-            }
-            if (Difficulty == Difficulties.Easy)
+            int element = rnd.Next(0, list.Count - 1);
+            for (int j = 0; j < 4; j++)
+                newPosition[j] = new Point(GameField.LForms[list[element].Item3][j].X + list[element].Item1, GameField.LForms[list[element].Item3][j].Y + list[element].Item2);
+            game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
+            return;
+        }
+        private void RunMedium(GameField game)
+        {
+            List<Tuple<int, int, int, int, int, int>> list = new List<Tuple<int, int, int, int, int, int>>();
+            List<Tuple<int, int, int, int, int, int>> goodList = new List<Tuple<int, int, int, int, int, int>>();
+            LShape newPosition = new LShape();
+            // Search move for win; save all correct positions
+            for (int x = 0; x < 4; x++)
+                for (int y = 0; y < 4; y++)
+                    for (int i = 0; i < 8; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                            newPosition[j] = new Point(GameField.LForms[i][j].X + x, GameField.LForms[i][j].Y + y);
+                        if (game.CheckCorrect(newPosition))
+                        {
+                            for (int stoneID = 0; stoneID < 2; stoneID++)
+                                for (int stoneX = 0; stoneX < 4; stoneX++)
+                                    for (int stoneY = 0; stoneY < 4; stoneY++)
+                                    {
+                                        GameField localGame = (GameField)game.Clone();
+                                        localGame.Play(newPosition);
+                                        if (localGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
+                                        {
+                                            list.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
+                                            localGame.Play(stoneID, new Point(stoneX, stoneY));
+                                            if (localGame.IsFinish())
+                                            {
+                                                game.Play(newPosition, stoneID, new Point(stoneX, stoneY));
+                                                return;
+                                            }
+                                        }
+                                    }
+                        }
+                    }
+            // Search move for not lose in 1 step; save all good positions
+            //*
+            int element;
+            for (element = 0; element < list.Count; element++)
             {
-                List<Tuple<int, int, int, int, int, int>> list = new List<Tuple<int, int, int, int, int, int>>();
-                Player newPosition = new Player();
-                int x, y, f, element;
-                // Search move for win; save all correct positions
-                for (x = 0; x < 4; x++)
-                    for (y = 0; y < 4; y++)
+                bool isGood = true;
+                GameField localGameBackup = (GameField)game.Clone();
+                for (int j = 0; j < 4; j++)
+                    newPosition[j] = new Point(GameField.LForms[list[element].Item3][j].X + list[element].Item1, GameField.LForms[list[element].Item3][j].Y + list[element].Item2);
+                localGameBackup.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
+                for (int x = 0; x < 4; x++)
+                    for (int y = 0; y < 4; y++)
                         for (int i = 0; i < 8; i++)
                         {
-                            LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
                             for (int j = 0; j < 4; j++)
-                                newPosition[j] = new Point(LocalGame.LForms[i][j].X + x, LocalGame.LForms[i][j].Y + y);
-                            if (LocalGame.CheckCorrect(newPosition))
+                                newPosition[j] = new Point(GameField.LForms[i][j].X + x, GameField.LForms[i][j].Y + y);
+                            if (localGameBackup.CheckCorrect(newPosition))
                             {
-                                //LocalGame.Play(newPosition);
-                                for (int i1 = 0; i1 < 4; i1++)
-                                    for (int j1 = 0; j1 < 4; j1++)
-                                        Field[i1, j1] = LocalGame.Field[i1, j1];
                                 for (int stoneID = 0; stoneID < 2; stoneID++)
                                     for (int stoneX = 0; stoneX < 4; stoneX++)
                                         for (int stoneY = 0; stoneY < 4; stoneY++)
                                         {
-                                            LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
-                                            LocalGame.Play(newPosition);
-                                            if (LocalGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
+                                            GameField localGame = (GameField)localGameBackup.Clone();
+                                            localGame.Play(newPosition);
+                                            if (localGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
                                             {
-                                                list.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
-                                                LocalGame.Play(stoneID, new Point(stoneX, stoneY));
-                                                if (LocalGame.IsFinish())
+                                                localGame.Play(stoneID, new Point(stoneX, stoneY));
+                                                if (localGame.IsFinish())
                                                 {
-                                                    GameForm.SelfRef.game.Play(newPosition, stoneID, new Point(stoneX, stoneY));
-                                                    return;
-                                                }
-                                                for (int i1 = 0; i1 < 4; i1++)
-                                                    for (int j1 = 0; j1 < 4; j1++)
-                                                        LocalGame.Field[i1, j1] = Field[i1, j1];
-                                                //LocalGame.BotStepssss();
-                                            }
-                                        }
-                                for (int i1 = 0; i1 < 4; i1++)
-                                    for (int j1 = 0; j1 < 4; j1++)
-                                        LocalGame.Field[i1, j1] = GameForm.SelfRef.game.Field[i1, j1];
-                            }
-                        }
-                element = rnd.Next(0, list.Count - 1);
-                for (int j = 0; j < 4; j++)
-                    newPosition[j] = new Point(LocalGame.LForms[list[element].Item3][j].X + list[element].Item1, LocalGame.LForms[list[element].Item3][j].Y + list[element].Item2);
-                GameForm.SelfRef.game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
-                return;
-            }
-            if (Difficulty == Difficulties.Medium)
-            {
-                List<Tuple<int, int, int, int, int, int>> list = new List<Tuple<int, int, int, int, int, int>>();
-                List<Tuple<int, int, int, int, int, int>> goodList = new List<Tuple<int, int, int, int, int, int>>();
-                Player newPosition = new Player();
-                int x, y, f, element;
-                // Search move for win; save all correct positions
-                for (x = 0; x < 4; x++)
-                    for (y = 0; y < 4; y++)
-                        for (int i = 0; i < 8; i++)
-                        {
-                            LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
-                            for (int j = 0; j < 4; j++)
-                                newPosition[j] = new Point(LocalGame.LForms[i][j].X + x, LocalGame.LForms[i][j].Y + y);
-                            if (LocalGame.CheckCorrect(newPosition))
-                            {
-                                //LocalGame.Play(newPosition);
-                                for (int stoneID = 0; stoneID < 2; stoneID++)
-                                    for (int stoneX = 0; stoneX < 4; stoneX++)
-                                        for (int stoneY = 0; stoneY < 4; stoneY++)
-                                        {
-                                            LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
-                                            LocalGame.Play(newPosition);
-                                            if (LocalGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
-                                            {
-                                                list.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
-                                                LocalGame.Play(stoneID, new Point(stoneX, stoneY));
-                                                if (LocalGame.IsFinish())
-                                                {
-                                                    GameForm.SelfRef.game.Play(newPosition, stoneID, new Point(stoneX, stoneY));
-                                                    return;
+                                                    isGood = false;
+                                                    goto finish;
                                                 }
                                             }
                                         }
                             }
                         }
-                // Search move for not lose in 1 step; save all good positions
-                //*
-                for (element = 0; element < list.Count; element++)
-                {
-                    Player player1, player2;
-                    int step = 0;
-                    Point stone1, stone2;
-                    bool isGood = true;
-                    LocalGame = new Game((GameForm.SelfRef.game.IsStep(0) ? 0 : 1), GameForm.SelfRef.game.player[0], GameForm.SelfRef.game.player[1], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
-                    for (int j = 0; j < 4; j++)
-                        newPosition[j] = new Point(LocalGame.LForms[list[element].Item3][j].X + list[element].Item1, LocalGame.LForms[list[element].Item3][j].Y + list[element].Item2);
-                    LocalGame.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
-                    player1 = LocalGame.player[0];
-                    player2 = LocalGame.player[1];
-                    step = (LocalGame.IsStep(0) ? 0 : 1);
-                    stone1 = LocalGame.stone[0];
-                    stone2 = LocalGame.stone[1];
-                    for (x = 0; x < 4; x++)
-                        for (y = 0; y < 4; y++)
-                            for (int i = 0; i < 8; i++)
-                            {
-                                LocalGame = new Game(step, player1, player2, stone1, stone2);
-                                for (int j = 0; j < 4; j++)
-                                    newPosition[j] = new Point(LocalGame.LForms[i][j].X + x, LocalGame.LForms[i][j].Y + y);
-                                if (LocalGame.CheckCorrect(newPosition))
-                                {
-                                    //LocalGame.Play(newPosition);
-                                    for (int stoneID = 0; stoneID < 2; stoneID++)
-                                        for (int stoneX = 0; stoneX < 4; stoneX++)
-                                            for (int stoneY = 0; stoneY < 4; stoneY++)
-                                            {
-                                                LocalGame = new Game(step, player1, player2, stone1, stone2);
-                                                LocalGame.Play(newPosition);
-                                                if (LocalGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
-                                                {
-                                                    LocalGame.Play(stoneID, new Point(stoneX, stoneY));
-                                                    if (LocalGame.IsFinish())
-                                                    {
-                                                        isGood = false;
-                                                        goto finish;
-                                                    }
-                                                }
-                                            }
-                                }
-                            }
                 finish:
-                    if (isGood)
-                    {
-                        goodList.Add(list[element]);
-                        //break;
-                    }
-                }//*/
-
-                if (goodList.Count > 0)
+                if (isGood)
                 {
-                    element = rnd.Next(0, goodList.Count - 1);
-                    //element = 0;
-                    for (int j = 0; j < 4; j++)
-                        newPosition[j] = new Point(LocalGame.LForms[goodList[element].Item3][j].X + goodList[element].Item1, LocalGame.LForms[goodList[element].Item3][j].Y + goodList[element].Item2);
-                    GameForm.SelfRef.game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
-                    return;
+                    goodList.Add(list[element]);
+                    //break;
                 }
-                element = rnd.Next(0, list.Count - 1);
-                for (int j = 0; j < 4; j++)
-                    newPosition[j] = new Point(LocalGame.LForms[list[element].Item3][j].X + list[element].Item1, LocalGame.LForms[list[element].Item3][j].Y + list[element].Item2);
-                GameForm.SelfRef.game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
+            }//*/
 
+            if (goodList.Count > 0)
+            {
+                element = rnd.Next(0, goodList.Count - 1);
+                //element = 0;
+                for (int j = 0; j < 4; j++)
+                    newPosition[j] = new Point(GameField.LForms[goodList[element].Item3][j].X + goodList[element].Item1, GameField.LForms[goodList[element].Item3][j].Y + goodList[element].Item2);
+                game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
                 return;
             }
-            if (Difficulty == Difficulties.Hard)
+            element = rnd.Next(0, list.Count - 1);
+            for (int j = 0; j < 4; j++)
+                newPosition[j] = new Point(GameField.LForms[list[element].Item3][j].X + list[element].Item1, GameField.LForms[list[element].Item3][j].Y + list[element].Item2);
+            game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
+
+            return;
+        }
+        private void RunHard(GameField game)
+        {
+            int curStep = game.IsStep(0) ? 0 : 1;
+            List<Tuple<int, int, int, int, int, int>> list = new List<Tuple<int, int, int, int, int, int>>();
+            List<Tuple<int, int, int, int, int, int>> goodList = new List<Tuple<int, int, int, int, int, int>>();
+            LShape newPosition = new LShape();
+            int element = -1, bestPriority = 123;
+            // Search move for win; save all correct positions
+            for (int x = 0; x < 4; x++)
+                for (int y = 0; y < 4; y++)
+                    for (int i = 0; i < 8; i++)
+                    {
+                        for (int j = 0; j < 4; j++)
+                            newPosition[j] = new Point(GameField.LForms[i][j].X + x, GameField.LForms[i][j].Y + y);
+                        if (game.CheckCorrect(newPosition))
+                        {
+                            for (int stoneID = 0; stoneID < 2; stoneID++)
+                                for (int stoneX = 0; stoneX < 4; stoneX++)
+                                    for (int stoneY = 0; stoneY < 4; stoneY++)
+                                    {
+                                        //GameField localGame = (GameField)game.Clone();
+                                        // Color important, because LosePositions calculated only for one of them
+                                        GameField localGame = new GameField(1, game.player[1 - curStep], game.player[curStep], game.stone[0], game.stone[1]);
+                                        localGame.Play(newPosition);
+                                        if (localGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
+                                        {
+                                            localGame.Play(stoneID, new Point(stoneX, stoneY));
+                                            list.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
+                                            if (localGame.IsFinish())
+                                            {
+                                                game.Play(newPosition, stoneID, new Point(stoneX, stoneY));
+                                                return;
+                                            }
+                                            ulong hash = Hash(localGame.Field);
+                                            if (LosePositions.Contains(hash))
+                                            {
+                                                if (priority[hash] < bestPriority)
+                                                {
+                                                    bestPriority = priority[hash];
+                                                    goodList.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
+                                                    element = goodList.Count - 1;
+                                                }
+                                            }
+                                        }
+                                    }
+                        }
+                    }
+            if (element != -1)
             {
-                List<Tuple<int, int, int, int, int, int>> list = new List<Tuple<int, int, int, int, int, int>>();
-                /*
-                for (int i = 0; i < 4; i++)
-                    for (int j = 0; j < 4; j++)
-                        Field[i, j] = Form1.SelfRef.game.Field[i, j];
-                Console.WriteLine(Hash());//*/
-                List<Tuple<int, int, int, int, int, int>> goodList = new List<Tuple<int, int, int, int, int, int>>();
-                Player newPosition = new Player();
-                int x, y, f, element = -1, bestPriority = 123;
-                ulong hash;
-                // Search move for win; save all correct positions
-                for (x = 0; x < 4; x++)
-                    for (y = 0; y < 4; y++)
+                for (int j = 0; j < 4; j++)
+                    newPosition[j] = new Point(GameField.LForms[goodList[element].Item3][j].X + goodList[element].Item1, GameField.LForms[goodList[element].Item3][j].Y + goodList[element].Item2);
+                game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
+                return;
+            }
+            /*if (goodList.Count > 0)
+            {
+                element = rnd.Next(0, goodList.Count - 1);
+                //element = 0;
+                for (int j = 0; j < 4; j++)
+                    newPosition[j] = new Point(GameField.LForms[goodList[element].Item3][j].X + goodList[element].Item1, GameField.LForms[goodList[element].Item3][j].Y + goodList[element].Item2);
+                Form1.SelfRef.game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
+                return;
+            }*/
+            /*
+             * for (int i1 = 0; i1 < 4; i1++)
+                                                for (int j1 = 0; j1 < 4; j1++)
+                                                    Field[i1, j1] = localGame.Field[i1, j1];
+                                            if (!LosePositions.Contains(Hash()))
+                                                list.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
+             */
+            //
+            // Search move for not lose in 1 step; save all good positions
+            //*
+            for (element = 0; element < list.Count; element++)
+            {
+                bool isGood = true;
+                GameField localGameBackup = new GameField(0, game.player[curStep], game.player[1 - curStep], game.stone[0], game.stone[1]);
+                for (int j = 0; j < 4; j++)
+                    newPosition[j] = new Point(GameField.LForms[list[element].Item3][j].X + list[element].Item1, GameField.LForms[list[element].Item3][j].Y + list[element].Item2);
+                localGameBackup.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
+                for (int x = 0; x < 4; x++)
+                    for (int y = 0; y < 4; y++)
                         for (int i = 0; i < 8; i++)
                         {
-                            LocalGame = new Game(1, GameForm.SelfRef.game.player[1 - curStep], GameForm.SelfRef.game.player[curStep], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
                             for (int j = 0; j < 4; j++)
-                                newPosition[j] = new Point(LocalGame.LForms[i][j].X + x, LocalGame.LForms[i][j].Y + y);
-                            if (LocalGame.CheckCorrect(newPosition))
+                                newPosition[j] = new Point(GameField.LForms[i][j].X + x, GameField.LForms[i][j].Y + y);
+                            if (localGameBackup.CheckCorrect(newPosition))
                             {
                                 for (int stoneID = 0; stoneID < 2; stoneID++)
                                     for (int stoneX = 0; stoneX < 4; stoneX++)
                                         for (int stoneY = 0; stoneY < 4; stoneY++)
                                         {
-                                            //LocalGame = new Game(curStep, Form1.SelfRef.game.player[curStep], Form1.SelfRef.game.player[1 - curStep], Form1.SelfRef.game.stone[0], Form1.SelfRef.game.stone[1]);
-                                            LocalGame = new Game(1, GameForm.SelfRef.game.player[1 - curStep], GameForm.SelfRef.game.player[curStep], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
-                                            LocalGame.Play(newPosition);
-                                            if (LocalGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
+                                            GameField localGame = (GameField)localGameBackup.Clone();
+                                            localGame.Play(newPosition);
+                                            if (localGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
                                             {
-                                                LocalGame.Play(stoneID, new Point(stoneX, stoneY));
-                                                list.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
-                                                for (int i1 = 0; i1 < 4; i1++)
-                                                    for (int j1 = 0; j1 < 4; j1++)
-                                                        Field[i1, j1] = LocalGame.Field[i1, j1];
-                                                if (LocalGame.IsFinish())
+                                                localGame.Play(stoneID, new Point(stoneX, stoneY));
+                                                if (localGame.IsFinish() || LosePositions.Contains(Hash(localGame.Field)))
                                                 {
-                                                    GameForm.SelfRef.game.Play(newPosition, stoneID, new Point(stoneX, stoneY));
-                                                    //Console.WriteLine(Hash());
-                                                    //goodList.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
-                                                    return;
-                                                }
-                                                hash = Hash();
-                                                if (LosePositions.Contains(hash))
-                                                {
-                                                    if (priority[hash] < bestPriority)
-                                                    {
-                                                        bestPriority = priority[hash];
-                                                        goodList.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
-                                                        //element = list.Count - 1;
-                                                        element = goodList.Count - 1;
-                                                    }
-                                                    //Form1.SelfRef.game.Play(newPosition, stoneID, new Point(stoneX, stoneY));
-                                                    //Console.WriteLine(Hash());
-                                                    //goodList.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
-                                                    //return;
+                                                    isGood = false;
+                                                    goto finishHard;
                                                 }
                                             }
                                         }
                             }
                         }
-                if (element != -1)
-                {
-                    for (int j = 0; j < 4; j++)
-                        newPosition[j] = new Point(LocalGame.LForms[goodList[element].Item3][j].X + goodList[element].Item1, LocalGame.LForms[goodList[element].Item3][j].Y + goodList[element].Item2);
-                    GameForm.SelfRef.game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
-                    return;
-                }
-                /*if (goodList.Count > 0)
-                {
-                    element = rnd.Next(0, goodList.Count - 1);
-                    //element = 0;
-                    for (int j = 0; j < 4; j++)
-                        newPosition[j] = new Point(LocalGame.LForms[goodList[element].Item3][j].X + goodList[element].Item1, LocalGame.LForms[goodList[element].Item3][j].Y + goodList[element].Item2);
-                    Form1.SelfRef.game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
-                    return;
-                }*/
-                /*
-                 * for (int i1 = 0; i1 < 4; i1++)
-                                                    for (int j1 = 0; j1 < 4; j1++)
-                                                        Field[i1, j1] = LocalGame.Field[i1, j1];
-                                                if (!LosePositions.Contains(Hash()))
-                                                    list.Add(new Tuple<int, int, int, int, int, int>(x, y, i, stoneID, stoneX, stoneY));
-                 */
-                //
-                // Search move for not lose in 1 step; save all good positions
-                //*
-                for (element = 0; element < list.Count; element++)
-                {
-                    Player player1, player2;
-                    Point stone1, stone2;
-                    bool isGood = true;
-                    LocalGame = new Game(0, GameForm.SelfRef.game.player[curStep], GameForm.SelfRef.game.player[1 - curStep], GameForm.SelfRef.game.stone[0], GameForm.SelfRef.game.stone[1]);
-                    for (int j = 0; j < 4; j++)
-                        newPosition[j] = new Point(LocalGame.LForms[list[element].Item3][j].X + list[element].Item1, LocalGame.LForms[list[element].Item3][j].Y + list[element].Item2);
-                    LocalGame.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
-                    //step = (LocalGame.IsStep(0) ? 0 : 1);
-                    player1 = LocalGame.player[0];
-                    player2 = LocalGame.player[1];
-                    stone1 = LocalGame.stone[0];
-                    stone2 = LocalGame.stone[1];
-                    for (x = 0; x < 4; x++)
-                        for (y = 0; y < 4; y++)
-                            for (int i = 0; i < 8; i++)
-                            {
-                                LocalGame = new Game(1, player1, player2, stone1, stone2);
-                                for (int j = 0; j < 4; j++)
-                                    newPosition[j] = new Point(LocalGame.LForms[i][j].X + x, LocalGame.LForms[i][j].Y + y);
-                                if (LocalGame.CheckCorrect(newPosition))
-                                {
-                                    //LocalGame.Play(newPosition);
-                                    for (int stoneID = 0; stoneID < 2; stoneID++)
-                                        for (int stoneX = 0; stoneX < 4; stoneX++)
-                                            for (int stoneY = 0; stoneY < 4; stoneY++)
-                                            {
-                                                LocalGame = new Game(1, player1, player2, stone1, stone2);
-                                                LocalGame.Play(newPosition);
-                                                if (LocalGame.CheckStone(stoneID, new Point(stoneX, stoneY)))
-                                                {
-                                                    LocalGame.Play(stoneID, new Point(stoneX, stoneY));
-                                                    for (int i1 = 0; i1 < 4; i1++)
-                                                        for (int j1 = 0; j1 < 4; j1++)
-                                                            Field[i1, j1] = LocalGame.Field[i1, j1];
-                                                    if (LocalGame.IsFinish() || LosePositions.Contains(Hash()))
-                                                    {
-                                                        isGood = false;
-                                                        goto finishHard;
-                                                    }
-                                                }
-                                            }
-                                }
-                            }
                 finishHard:
-                    if (isGood)
-                    {
-                        goodList.Add(list[element]);
-                        //break;
-                    }
-                }
-
-                if (goodList.Count > 0)
+                if (isGood)
                 {
-                    element = rnd.Next(0, goodList.Count - 1);
-                    //element = 0;
-                    for (int j = 0; j < 4; j++)
-                        newPosition[j] = new Point(LocalGame.LForms[goodList[element].Item3][j].X + goodList[element].Item1, LocalGame.LForms[goodList[element].Item3][j].Y + goodList[element].Item2);
-                    GameForm.SelfRef.game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
-                    return;
+                    goodList.Add(list[element]);
+                    //break;
                 }
-                //
-                element = rnd.Next(0, list.Count - 1);
+            }
+
+            if (goodList.Count > 0)
+            {
+                element = rnd.Next(0, goodList.Count - 1);
+                //element = 0;
                 for (int j = 0; j < 4; j++)
-                    newPosition[j] = new Point(LocalGame.LForms[list[element].Item3][j].X + list[element].Item1, LocalGame.LForms[list[element].Item3][j].Y + list[element].Item2);
-                GameForm.SelfRef.game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
+                    newPosition[j] = new Point(GameField.LForms[goodList[element].Item3][j].X + goodList[element].Item1, GameField.LForms[goodList[element].Item3][j].Y + goodList[element].Item2);
+                game.Play(newPosition, goodList[element].Item4, new Point(goodList[element].Item5, goodList[element].Item6));
                 return;
+            }
+            //
+            element = rnd.Next(0, list.Count - 1);
+            for (int j = 0; j < 4; j++)
+                newPosition[j] = new Point(GameField.LForms[list[element].Item3][j].X + list[element].Item1, GameField.LForms[list[element].Item3][j].Y + list[element].Item2);
+            game.Play(newPosition, list[element].Item4, new Point(list[element].Item5, list[element].Item6));
+            return;
+        }
+        public void Run(GameField game, Difficulties difficulty = Difficulties.Random)
+        {
+            switch (difficulty)
+            {
+                case Difficulties.Random:
+                    RunRandom(game);
+                    break;
+                case Difficulties.Easy:
+                    RunEasy(game);
+                    break;
+                case Difficulties.Medium:
+                    RunMedium(game);
+                    break;
+                case Difficulties.Hard:
+                    RunHard(game);
+                    break;
+                default:
+                    throw new ArgumentException("Bot can't play instead player!");
             }
         }
     }

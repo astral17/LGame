@@ -4,20 +4,20 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace LGame
 {
+    [SupportedOSPlatform("windows")]
     public partial class GameForm : Form
     {
-        public static GameForm SelfRef;
         public readonly int CellSize = 150;
         public Game game = new Game();
-        public Bot bot = new Bot();
 
-        private Player selected = new Player();
+        private LShape selected = new LShape();
         private int SelectedStone = -1;
         private Phase StepPhase = Phase.MovePlayer;
         private bool isMouseDown = false;
@@ -33,12 +33,11 @@ namespace LGame
         public GameForm()
         {            
             InitializeComponent();
-            SelfRef = this;
             selected.Clear();
             game.InterruptBot = true;
-            //game.RegisterBot(0, Bot.Difficulties.Hard);
+            //game.RegisterBot(0, Bot.Difficulties.Medium);
+            //game.RegisterBot(1, Bot.Difficulties.Medium);
             game.RegisterBot(1, Bot.Difficulties.Hard);
-            //game.RegisterBot(1, Bot.Difficulties.Hard);
             if (game.IsBotStep())
             {
                 StepPhase = Phase.WaitBot;
@@ -70,7 +69,7 @@ namespace LGame
         }
         private void pictureBox1_Click(object sender, EventArgs e)
         {
-            /*Player tmp = new Player();
+            /*LShape tmp = new LShape();
             tmp[0] = new Point(2, 0);
             tmp[1] = new Point(2, 1);
             tmp[2] = new Point(2, 2);
@@ -88,16 +87,16 @@ namespace LGame
                 {
                     switch (game.Field[i, j])
                     {
-                        case 0:
+                        case FieldTile.None:
                             e.Graphics.FillRectangle(Brushes.White, i * CellSize, j * CellSize, CellSize, CellSize);
                             break;
-                        case 1:
+                        case FieldTile.BluePlayer:
                             e.Graphics.FillRectangle(Brushes.Blue, i * CellSize, j * CellSize, CellSize, CellSize);
                             break;
-                        case 2:
+                        case FieldTile.RedPlayer:
                             e.Graphics.FillRectangle(Brushes.Red, i * CellSize, j * CellSize, CellSize, CellSize);
                             break;
-                        case 3:
+                        case FieldTile.YellowStone:
                             if (SelectedStone == 0)
                             {
                                 if (game.IsPlayerStep(0))
@@ -109,7 +108,7 @@ namespace LGame
                                 e.Graphics.FillRectangle(Brushes.White, i * CellSize, j * CellSize, CellSize, CellSize);
                             e.Graphics.FillEllipse(Brushes.Yellow, i * CellSize, j * CellSize, CellSize, CellSize);
                             break;
-                        case 4:
+                        case FieldTile.GreenStone:
                             if (SelectedStone == 1)
                             {
                                 if (game.IsPlayerStep(0))
@@ -146,14 +145,14 @@ namespace LGame
             if (StepPhase == Phase.Finished)
             {
                 if (game.IsStep(0))
-                    e.Graphics.DrawString("Congratulations!", new Font("Arial", 32), Brushes.Pink, pictureBox1.Width / 2 - 180, pictureBox1.Height / 2 - 24);
+                    e.Graphics.DrawString("Red Won!", new Font("Arial", 32), Brushes.Pink, pictureBox1.Width / 2 - 120, pictureBox1.Height / 2 - 24);
                 if (game.IsStep(1))
-                    e.Graphics.DrawString("Congratulations!", new Font("Arial", 32), Brushes.LightBlue, pictureBox1.Width / 2 - 180, pictureBox1.Height / 2 - 24);
+                    e.Graphics.DrawString("Blue Won!", new Font("Arial", 32), Brushes.LightBlue, pictureBox1.Width / 2 - 120, pictureBox1.Height / 2 - 24);
             }
             System.Threading.Monitor.Exit(e.Graphics);
         }
 
-        private bool DrawNewPosition(Point newPoint) //Return true if need update screen
+        private bool DrawNewPosition(Point newPoint) // Return true if need update screen
         {
             if (0 > newPoint.X || newPoint.X >= 4 || 0 > newPoint.Y || newPoint.Y >= 4)
                 return false;
@@ -219,9 +218,9 @@ namespace LGame
                     newPoint = new Point(e.X / CellSize, e.Y / CellSize);
                     if (0 > newPoint.X || newPoint.X >= 4 || 0 > newPoint.Y || newPoint.Y >= 4)
                         return;
-                    if (game.Field[newPoint.X, newPoint.Y] > 2)
+                    if ((int)game.Field[newPoint.X, newPoint.Y] > 2)
                     {
-                        SelectedStone = game.Field[newPoint.X, newPoint.Y] - 3;
+                        SelectedStone = (int)game.Field[newPoint.X, newPoint.Y] - 3;
                         StepPhase = Phase.MoveStone;
                     }
                     pictureBox1.Refresh();
